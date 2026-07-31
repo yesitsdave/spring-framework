@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(//home/dave/projects/spring-framework/**)",
+      "Bash(docker --version)",
+      "Bash(docker image *)",
+      "Artifact",
+      "Bash(git checkout *)",
+      "Bash(git log *)"
+    ]
+  },
+  "worktree": {
+    "baseRef": "head"
+  }
+}

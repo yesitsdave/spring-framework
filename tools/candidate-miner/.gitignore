@@ -1,0 +1,7 @@
+# Derived output. Fully reproducible from a commit, and the manifest carries a
+# wall-clock timestamp that would churn every run. The durable cross-run state
+# is ledger/, which IS committed.
+out/
+
+__pycache__/
+*.pyc
