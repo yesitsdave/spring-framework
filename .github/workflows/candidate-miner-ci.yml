@@ -1,0 +1,25 @@
+name: Candidate Miner CI
+on:
+  push:
+    paths:
+      - 'tools/candidate-miner/**'
+      - '.github/workflows/candidate-miner-ci.yml'
+  pull_request:
+    paths:
+      - 'tools/candidate-miner/**'
+      - '.github/workflows/candidate-miner-ci.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    name: Test Candidate Miner
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+      - name: Show Python Version
+        run: python3 --version
+      - name: Run Tests
+        working-directory: tools/candidate-miner
+        run: python3 -m unittest discover -s tests -t .
