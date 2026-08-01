@@ -14,3 +14,5 @@
 *.jpg   binary
 *.png   binary
 *.vsd   binary
+
+.github/workflows/*.lock.yml linguist-generated=true merge=ours

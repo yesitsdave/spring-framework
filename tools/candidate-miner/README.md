@@ -134,6 +134,28 @@ requests/hour, and the command refuses to run without one unless you pass
 `--allow-unauthenticated`, because a truncated corpus is worse than none. All
 responses are cached under `out/.cache/github`, so re-runs are free and identical.
 
+## The scan workflow
+
+`.github/workflows/candidate-scan.md` (a [gh-aw](https://github.github.com/gh-aw/)
+workflow) runs weekly. Its deterministic half is `scan.py`:
+
+```bash
+./scan.py --repo-slug <owner>/<repo> --max 3
+```
+
+which harvests, runs every miner, drops candidates that already have a GitHub
+issue — open **or closed**, so closing an issue is a veto the scan respects —
+ranks the rest by score, and writes the top `--max` to `out/proposable.json`.
+The workflow's agent may only file issues for what that file contains; each
+issue body carries a fingerprint marker
+(`<!-- candidate-miner:fingerprint sha256:... -->`) that is the deduplication
+key for every later run.
+
+The issue listing is deliberately fetched uncached (unlike harvest traffic): a
+cached listing would miss issues filed after the cache was written and
+re-propose their candidates. A failed harvest skips only the miners that
+consume it, with a recorded warning; a miner failure stops the scan loudly.
+
 ## The ledger
 
 `ledger/<miner>.jsonl` persists one entry per fingerprint with state
@@ -269,6 +291,8 @@ outcome this tool exists to cause), the canary list must be updated to match.
 ```
 miner.py                       deterministic CLI (never imports LLM code — tested)
 triage.py                      adjudication CLI (corpus -> model -> ledger)
+scan.py                        workflow support: miners -> dedupe vs filed issues
+                               -> out/proposable.json (see "The scan workflow")
 candidateminer/
   contract.py                  record schema, fingerprint, validation
   index.py                     FQN index + resolution + denylist
