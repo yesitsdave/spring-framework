@@ -18,9 +18,8 @@ permissions:
 # compiled into the config but never reaches the guard's env var in this
 # firewall version, so a table-listed model is the only working option.
 # Revisit claude-opus-5 when the pinned gh-aw-firewall image updates.
-engine:
-  id: claude
-  model: claude-opus-4-8
+engine: claude
+model: claude-opus-4-8
 
 network: defaults
 

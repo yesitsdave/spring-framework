@@ -316,7 +316,9 @@ candidateminer/
     ci_failures.py             failed main-branch CI runs, classified, tests extracted
 ledger/                        committed state
 out/                           derived output (gitignored)
-guidance/                      AGENTS.md draft derived from the review corpus
-                               (a recommendation for the repo root, kept here
-                               beside its evidence; see agent-logs/09)
+../../AGENTS.md                agent/contributor guidance derived from the
+                               review corpus (drafted here as guidance/, then
+                               promoted to the repo root when the solve
+                               workflow became its first consumer; see
+                               agent-logs/09 and /15)
 ```
