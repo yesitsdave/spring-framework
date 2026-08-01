@@ -12,7 +12,19 @@ permissions:
   issues: read
   actions: read
 
-engine: claude
+engine:
+  id: claude
+  model: claude-opus-5
+
+# The AWF api-proxy meters AI credits per model and rejects models missing
+# from its built-in pricing table (HTTP 400 unknown_model_ai_credits) —
+# claude-opus-5 is newer than the shipped table. This supplies the fallback
+# rate, set to the model's real pricing ($/1M tokens) so the daily-credit
+# guardrail stays meaningful.
+models:
+  default-ai-credits-pricing:
+    input: 5.0
+    output: 25.0
 
 network: defaults
 

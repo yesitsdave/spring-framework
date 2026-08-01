@@ -85,3 +85,19 @@ into the lock file.
 Push, add the `ANTHROPIC_API_KEY` repo secret, `workflow_dispatch` a run,
 review the staged preview in the run summary, then delete `staged: true`,
 recompile, and let the schedule take it.
+
+## Live-run fix (2026-08-01): unknown-model AI-credits pricing
+
+The first dispatched run failed in the agent step: gh-aw's firewall api-proxy
+meters AI credits per model and returned
+`400: Model "claude-opus-5" has no AI credits pricing` — the model is newer
+than the proxy's shipped pricing table, so every request was rejected before
+reaching Anthropic. The fix (per gh-aw ADR-47687, the BYOK-model escape
+hatch) is the `models.default-ai-credits-pricing` frontmatter field, which
+compiles into `apiProxy.defaultAiCreditsPricing` in the AWF config. Set to
+Opus 5's real rates ($5/$25 per MTok, verified against current reference
+material rather than memory) so the daily-credit guardrail meters honestly
+instead of being pinned to zero or disabled. The engine model is now pinned
+explicitly (`engine: {id: claude, model: claude-opus-5}`) rather than
+inherited from the harness default, so the declared pricing and the model
+that actually runs can't drift apart silently.
