@@ -114,8 +114,11 @@ under its pre-2011 package`. Bad: `candidate-miner finding docs.dead_api_referen
 6. **Provenance** — the commit the candidates were mined at (`repo.commit` in
    the record) and, for `flaky_test` candidates, the note that evidence
    reflects the harvest window recorded in the record.
-7. The marker, exactly:
-   `<!-- candidate-miner:fingerprint <fingerprint> -->`
+7. **Dedupe key** — the body's final line, as a visible inline-code span,
+   exactly: `` `candidate-miner:fingerprint <fingerprint>` ``
+   Do NOT wrap it in an HTML comment: the safe-output sanitizer strips HTML
+   comments from issue bodies, and a stripped marker silently breaks
+   deduplication for every future scan.
 
 Write for a junior contributor picking up their first issue on this repo:
 plain sentences, no internal jargon from the mining tool beyond what the

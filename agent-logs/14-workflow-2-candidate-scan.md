@@ -121,3 +121,25 @@ load-bearing. Revisit Opus 5 when the pinned firewall image updates its
 table. (The run "reaching detection" despite the failed agent step is just
 gh-aw's threat-detection job running unconditionally afterwards — not
 progress.)
+
+## Live-run fix 2 (2026-08-01): the sanitizer eats HTML comments
+
+The first live (unstaged) run filed all three issues correctly — except the
+fingerprint marker was missing from every body, leaving a gap of blank lines
+where it should have been. gh-aw's safe-output sanitizer strips HTML comments
+from agent-authored content (its own footer comments are appended after
+sanitization, which is why they survive). A stripped marker silently breaks
+deduplication: the very next scan would have re-filed all three issues.
+
+Fix, end to end: the marker contract is now a **visible inline-code line**
+(`candidate-miner:fingerprint sha256:...`) as the body's last line.
+`MARKER_RE` was loosened to match the bare token with a `\b` guard (so the
+legacy comment-wrapped form still parses, and a 65-hex digest does not);
+prompt, README, and tests updated (241 green, including a legacy-form
+regression test); the three live issues were patched to carry the visible
+marker. Verified live: a fresh `scan.py` run against the fork now reports
+`mined 17, already filed 3, selected 3`, with the next batch being the three
+75-scored candidates — dedupe holds and the drip-feed advances.
+
+Lesson recorded: anything an agent writes through safe-outputs is
+sanitized content — invisible metadata must not ride in HTML comments.

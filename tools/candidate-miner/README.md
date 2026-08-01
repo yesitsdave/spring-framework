@@ -147,9 +147,10 @@ which harvests, runs every miner, drops candidates that already have a GitHub
 issue — open **or closed**, so closing an issue is a veto the scan respects —
 ranks the rest by score, and writes the top `--max` to `out/proposable.json`.
 The workflow's agent may only file issues for what that file contains; each
-issue body carries a fingerprint marker
-(`<!-- candidate-miner:fingerprint sha256:... -->`) that is the deduplication
-key for every later run.
+issue body ends with a visible fingerprint marker
+(`` `candidate-miner:fingerprint sha256:...` ``) that is the deduplication
+key for every later run. It is deliberately *not* an HTML comment — gh-aw's
+safe-output sanitizer strips those from agent-authored bodies.
 
 The issue listing is deliberately fetched uncached (unlike harvest traffic): a
 cached listing would miss issues filed after the cache was written and

@@ -24,7 +24,7 @@ def _fingerprint(char: str) -> str:
 
 
 def _marker(fingerprint: str) -> str:
-    return f"<!-- candidate-miner:fingerprint {fingerprint} -->"
+    return f"`candidate-miner:fingerprint {fingerprint}`"
 
 
 class FakeClient:
@@ -45,11 +45,21 @@ class MarkerTests(unittest.TestCase):
 
     def test_marker_tolerates_extra_whitespace(self):
         fp = _fingerprint("b")
-        text = f"<!--  candidate-miner:fingerprint   {fp}  -->"
+        text = f"candidate-miner:fingerprint   {fp}"
+        self.assertEqual(scan.MARKER_RE.findall(text), [fp])
+
+    def test_legacy_html_comment_form_still_matches(self):
+        """Issues filed before the sanitizer was understood may carry this."""
+        fp = _fingerprint("c")
+        text = f"<!-- candidate-miner:fingerprint {fp} -->"
         self.assertEqual(scan.MARKER_RE.findall(text), [fp])
 
     def test_truncated_digest_does_not_match(self):
-        text = f"<!-- candidate-miner:fingerprint sha256:{'a' * 63} -->"
+        text = f"candidate-miner:fingerprint sha256:{'a' * 63}"
+        self.assertEqual(scan.MARKER_RE.findall(text), [])
+
+    def test_overlong_digest_does_not_match(self):
+        text = f"candidate-miner:fingerprint sha256:{'a' * 65}"
         self.assertEqual(scan.MARKER_RE.findall(text), [])
 
 

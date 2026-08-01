@@ -9,9 +9,12 @@ veto the scan respects -- and writes the ranked, capped remainder to
 contains.
 
 Deduplication key: the fingerprint marker the agent embeds in every issue body
-(``<!-- candidate-miner:fingerprint sha256:... -->``). The issue listing is
-fetched **uncached**, unlike harvest traffic: a cached listing would miss
-issues filed after the cache was written and re-propose their candidates.
+(``candidate-miner:fingerprint sha256:...`` as a visible inline-code line --
+NOT an HTML comment, which gh-aw's safe-output sanitizer strips from
+agent-authored content; the regex tolerates the comment-wrapped form too).
+The issue listing is fetched **uncached**, unlike harvest traffic: a cached
+listing would miss issues filed after the cache was written and re-propose
+their candidates.
 
 Still no LLM here. Exit codes match miner.py: 0 success, 1 error, 2 defect.
 """
@@ -38,9 +41,7 @@ EXIT_ERROR = 1
 EXIT_DEFECT = 2
 
 ISSUE_LABEL = "candidate-miner"
-MARKER_RE = re.compile(
-    r"<!--\s*candidate-miner:fingerprint\s+(sha256:[0-9a-f]{64})\s*-->"
-)
+MARKER_RE = re.compile(r"candidate-miner:fingerprint\s+(sha256:[0-9a-f]{64})\b")
 
 # Corpus-consuming miners run only when their harvest succeeded this run; the
 # others mine the checkout directly and always run.
