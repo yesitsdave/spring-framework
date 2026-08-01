@@ -12,19 +12,15 @@ permissions:
   issues: read
   actions: read
 
+# Pinned to a model present in the AWF api-proxy's curated pricing table
+# (v0.27.42 lists every current Claude model EXCEPT claude-opus-5, which
+# 400s as unpriced). The `models.default-ai-credits-pricing` escape hatch is
+# compiled into the config but never reaches the guard's env var in this
+# firewall version, so a table-listed model is the only working option.
+# Revisit claude-opus-5 when the pinned gh-aw-firewall image updates.
 engine:
   id: claude
-  model: claude-opus-5
-
-# The AWF api-proxy meters AI credits per model and rejects models missing
-# from its built-in pricing table (HTTP 400 unknown_model_ai_credits) —
-# claude-opus-5 is newer than the shipped table. This supplies the fallback
-# rate, set to the model's real pricing ($/1M tokens) so the daily-credit
-# guardrail stays meaningful.
-models:
-  default-ai-credits-pricing:
-    input: 5.0
-    output: 25.0
+  model: claude-opus-4-8
 
 network: defaults
 

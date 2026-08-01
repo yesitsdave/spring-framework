@@ -101,3 +101,23 @@ instead of being pinned to zero or disabled. The engine model is now pinned
 explicitly (`engine: {id: claude, model: claude-opus-5}`) rather than
 inherited from the harness default, so the declared pricing and the model
 that actually runs can't drift apart silently.
+
+**Second failure, same 400 — the escape hatch is broken in awf v0.27.42, so
+the real fix is a table-listed model.** The re-run provably used the new lock
+(the init log's model lost its `[1m]` suffix, i.e. the explicit pin took),
+yet the guard still reported no default pricing. Traced through the pinned
+firewall tag: the compiled config carries `apiProxy.defaultAiCreditsPricing`,
+the v0.27.42 schema accepts it, `config-mapper.ts` maps it, and
+`ai-credits-guard.js` reads it from `AWF_DEFAULT_AI_CREDITS_PRICING` — but
+that env var demonstrably never reaches the api-proxy container in the
+compose path. Not our bug to fix. The curated pricing table at v0.27.42
+(`containers/api-proxy/ai-credits-pricing.js`) lists every current Claude
+model **except `claude-opus-5`** — Sonnet 5 and Fable 5 included — so the
+model simply fell between firewall releases. Fix: pin
+`engine.model: claude-opus-4-8` (in the table, same $5/$25 rates, and amply
+capable of formatting three issues from prepared JSON) and drop the
+non-functional pricing frontmatter rather than leave decoration that looks
+load-bearing. Revisit Opus 5 when the pinned firewall image updates its
+table. (The run "reaching detection" despite the failed agent step is just
+gh-aw's threat-detection job running unconditionally afterwards — not
+progress.)
