@@ -48,7 +48,6 @@ steps:
 # a preview in the run summary instead of being created. Remove it (and
 # `gh aw compile`) once a preview has been reviewed and looks right.
 safe-outputs:
-  staged: true
   create-pull-request:
     draft: true
     title-prefix: "[candidate-solve] "
