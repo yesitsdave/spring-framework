@@ -53,12 +53,10 @@ steps:
 # the run summary instead of being created. Remove it (and `gh aw compile`)
 # once a preview has been reviewed and looks right.
 safe-outputs:
-  staged: true
   create-issue:
     max: 3
     title-prefix: "[candidate-miner] "
     labels: [candidate-miner]
-
 ---
 
 # Candidate scan: file mined candidates as issues
