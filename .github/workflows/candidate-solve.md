@@ -22,10 +22,14 @@ network: defaults
 
 timeout-minutes: 30
 
+# The bash entry needs the `:*` suffix (Claude Code permission syntax) to
+# permit arguments — a plain trailing ` *` is silently dropped by the
+# compiler, leaving only the bare command allowed, which auto-denies the
+# mandated `--fingerprint` verification call.
 tools:
   edit:
   bash:
-    - "python3 tools/candidate-miner/solve_target.py *"
+    - "python3 tools/candidate-miner/solve_target.py:*"
 
 steps:
   - name: Check Out Code

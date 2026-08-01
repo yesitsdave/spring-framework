@@ -96,3 +96,31 @@ Push, apply `solve-it` to issue #1, review the staged PR preview in the run
 summary, then remove `staged: true`, recompile, re-label. Issue #1 is the
 designed first target: the one-token package fix that log 02 called "the one
 PR to open if only one is ever opened".
+
+## Live-run fix (maiden run): bash allowlist needs `:*`, not ` *`
+
+The first labelled run confirmed the design and found one authoring bug. The
+verdict came back `confirmed`, the agent made the correct one-token edit —
+then the mandated post-fix verification was auto-denied: the frontmatter
+entry `"python3 tools/candidate-miner/solve_target.py *"` compiles to
+`Bash(python3 tools/candidate-miner/solve_target.py)` with the shell-glob
+suffix silently dropped. Claude Code permission patterns want `:*` to admit
+arguments (compare the built-ins: `Bash(git add:*)`), so only the bare
+command was allowed and `--fingerprint`, even `--help`, were denied.
+
+Two things worth keeping from this run:
+
+1. **The agent's failure behaviour was exactly what the prompt demanded.**
+   Unable to produce the `gone` proof, it did not fabricate the verdict or
+   open an unverified PR: it reverted its edit, verified the tree was clean,
+   posted one explanatory comment, and filed a `missing_tool` report naming
+   the precise allowlist fix. The verification gate held under pressure,
+   which is the whole point of the gate.
+2. **Authoring lesson:** after compiling, grep the lock file's
+   `--allowed-tools` list for every bash entry you declared — the compiler
+   normalises entries and drops what it does not understand, silently. The
+   cache-ordering bug (log 14) and this one were both caught only by reading
+   the compiled artifact.
+
+Fixed to `"python3 tools/candidate-miner/solve_target.py:*"`; the compiled
+pattern now carries the wildcard.
