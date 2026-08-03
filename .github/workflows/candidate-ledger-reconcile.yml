@@ -1,0 +1,40 @@
+name: Candidate Ledger Reconcile
+# Fully deterministic (no LLM): folds candidate-miner issue outcomes back
+# into the committed ledgers. Close-as-not-planned becomes a permanent
+# ledger decline; close-as-completed becomes done; open issues are queued.
+# Issues opened by the scan workflow's GITHUB_TOKEN never fire this event
+# (by design — no workflow loops); the weekly sweep picks those up.
+on:
+  issues:
+    types: [closed, reopened]
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: read
+concurrency:
+  group: candidate-ledger-reconcile
+jobs:
+  reconcile:
+    name: Reconcile Ledgers From Issue State
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'candidate-miner')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+      - name: Reconcile
+        id: reconcile
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/candidate-miner/reconcile.py --repo-slug "$GITHUB_REPOSITORY"
+      - name: Commit Ledger Changes
+        if: steps.reconcile.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/candidate-miner/ledger
+          git commit -m "Reconcile candidate ledgers from issue state"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

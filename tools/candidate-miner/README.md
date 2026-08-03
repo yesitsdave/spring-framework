@@ -157,6 +157,33 @@ cached listing would miss issues filed after the cache was written and
 re-propose their candidates. A failed harvest skips only the miners that
 consume it, with a recorded warning; a miner failure stops the scan loudly.
 
+## The solve and reconcile workflows
+
+`candidate-solve` (`.github/workflows/candidate-solve.md`, gh-aw): applying
+the `solve-it` label to a candidate-miner issue runs `solve_target.py`, which
+resolves the issue's fingerprint through the committed ledger to its owning
+miner and re-runs it. Only on a `confirmed` verdict does the agent make the
+minimal fix — then it must re-run `solve_target.py --fingerprint <fp>`
+(offline) and see `gone` before a draft PR is created. The same tool proves
+the candidate's presence before the fix and its absence after.
+
+`candidate-ledger-reconcile` (`.github/workflows/candidate-ledger-reconcile.yml`,
+plain Actions, no LLM): `reconcile.py` folds issue outcomes back into the
+committed ledgers and the workflow commits the result. The gesture → state
+mapping:
+
+| Issue gesture | Ledger state |
+|---|---|
+| open | `queued` |
+| closed as completed (e.g. by a merged PR's `Fixes #N`) | `done` |
+| closed as not planned | `declined` — permanent, with who and why |
+| reopened after done | `queued` again |
+| anything vs. an existing `declined` | held and reported; only a hand edit reopens a veto |
+
+Issues created by the scan's own token never fire the event trigger (GitHub
+suppresses workflow-triggering for `GITHUB_TOKEN` events — which also means
+no workflow loops); the weekly sweep reconciles those.
+
 ## The ledger
 
 `ledger/<miner>.jsonl` persists one entry per fingerprint with state
@@ -294,6 +321,11 @@ miner.py                       deterministic CLI (never imports LLM code — tes
 triage.py                      adjudication CLI (corpus -> model -> ledger)
 scan.py                        workflow support: miners -> dedupe vs filed issues
                                -> out/proposable.json (see "The scan workflow")
+solve_target.py                workflow support: issue -> ledger -> owning miner
+                               -> confirmed/gone verdict (see "The solve and
+                               reconcile workflows")
+reconcile.py                   workflow support: issue outcomes -> ledger states
+                               (deterministic; committed by its workflow)
 candidateminer/
   contract.py                  record schema, fingerprint, validation
   index.py                     FQN index + resolution + denylist
