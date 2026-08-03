@@ -460,7 +460,7 @@ The following example shows how to do so:
 
 [source,xml,indent=0,subs="verbatim,quotes"]
 ----
-	<bean class="org.springframework.beans.factory.config.PropertySourcesPlaceholderConfigurer">
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
 		<property name="locations">
 			<value>classpath:com/something/strategy.properties</value>
 		</property>
